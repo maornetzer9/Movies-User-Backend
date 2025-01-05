@@ -1,0 +1,27 @@
+[
+  {
+    "_id": "6763305d4bbdf2c8bd77a9e2",
+    "permissions": [
+      "Delete-Subscriptions",
+      "View-Subscriptions",
+      "Create-Subscriptions",
+      "Update-Subscriptions"
+    ]
+  },
+  {
+    "_id": "676330714bbdf2c8bd77a9e5",
+    "permissions": [
+      "Delete-Movies",
+      "View-Movies",
+      "Update-Movies",
+      "Create-Movies"
+    ]
+  },
+  {
+    "_id": "676330bb8361a1a701c824bb",
+    "permissions": [
+      "View-Subscriptions",
+      "View-Movies"
+    ]
+  }
+]

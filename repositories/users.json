@@ -1,0 +1,24 @@
+[
+  {
+    "_id": "6763305d4bbdf2c8bd77a9e2",
+    "firstName": "Maor",
+    "lastName": "Netzer",
+    "sessionTimeout": 25,
+    "createAt": "12/18/2024"
+  },
+  {
+    "_id": "676330714bbdf2c8bd77a9e5",
+    "firstName": "Daniel",
+    "lastName": "Cohen",
+    "sessionTimeout": 27,
+    "createAt": "12/18/2024",
+    "username": "daniel"
+  },
+  {
+    "_id": "676330bb8361a1a701c824bb",
+    "firstName": "Hen",
+    "lastName": "Levi",
+    "username": "hen",
+    "sessionTimeout": 0
+  }
+]
