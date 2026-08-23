@@ -27,7 +27,13 @@ Handles login, demo registration, password change, admin user CRUD, and session 
 | `SMTP_SECURE` | No | `true` for port 465 |
 | `MAIL_FROM` | No | Visible From address |
 
-Copy `.env.example` to `.env` before running.
+Copy `.env.example` to `.env` before running:
+
+```bash
+cp .env.example .env
+```
+
+`.env` is gitignored — `MONGOOSE_URI`, `SECRET_KEY`, and the SMTP credentials must never be committed. Add any new variable to `.env.example` with a placeholder value and to the table above.
 
 ---
 
