@@ -10,7 +10,7 @@ const authMiddleware = async (req, res, next) => {
 
         const verify = await verifyToken(token);
         
-        if(!verify) return res.status(code).json(message);
+        if(!verify) return res.status(code).json({ code, message });
 
         req.user = verify;
         next();
@@ -19,7 +19,7 @@ const authMiddleware = async (req, res, next) => {
     {
         const { code, message } = Responses.internalError;
         console.error(err.message);
-        return res.status(code).json(message);
+        return res.status(code).json({ code, message });
     }
 }
 

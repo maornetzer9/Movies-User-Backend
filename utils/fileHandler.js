@@ -1,94 +1,136 @@
-
 const fs = require('fs').promises;
 const path = require('path');
 const { Responses } = require('../responses/responses');
-const { promises } = require('dns');
 
-const success = Responses.success
-// TODO: Add here checkout if the file is exists if not create one. 
-// Helper function to read JSON file
+const success = Responses.success;
+
+const normalizeId = (value) => {
+    if (value == null) return '';
+    if (typeof value === 'object' && value._id != null) return String(value._id).trim();
+    return String(value).trim();
+};
+
+const validateUsersJsonRecord = (record) => {
+    const _id = normalizeId(record?._id);
+    const firstName = String(record?.firstName ?? '').trim();
+    const lastName = String(record?.lastName ?? '').trim();
+
+    if (!_id) {
+        return { valid: false, message: 'User JSON record requires a non-empty _id.' };
+    }
+    if (!firstName) {
+        return { valid: false, message: 'User JSON record requires firstName.' };
+    }
+    if (!lastName) {
+        return { valid: false, message: 'User JSON record requires lastName.' };
+    }
+
+    return {
+        valid: true,
+        record: {
+            ...record,
+            _id,
+            firstName,
+            lastName,
+        },
+    };
+};
+
+const validatePermissionsJsonRecord = (record) => {
+    const _id = normalizeId(record?._id);
+    if (!_id) {
+        return { valid: false, message: 'Permissions JSON record requires a non-empty _id.' };
+    }
+    if (!Array.isArray(record?.permissions)) {
+        return { valid: false, message: 'Permissions JSON record requires a permissions array.' };
+    }
+
+    return {
+        valid: true,
+        record: { _id, permissions: record.permissions },
+    };
+};
+
 const readUsersFile = async (fileName) => {
-    try 
-    {
+    try {
         const filePath = path.join(__dirname, `../repositories/${fileName}`);
         const data = await fs.readFile(filePath, 'utf-8');
-        if(!data) return [];
-        return JSON.parse(data);;
-    } 
-    catch(err) 
-    {
-        console.error("Error reading file:", err.message);
+        if (!data) return [];
+        return JSON.parse(data);
+    } catch (err) {
+        console.error('Error reading file:', err.message);
         throw new Error(`Failed to reading file: ${fileName}: ${err.message}`);
     }
-}
+};
 
-
-// Helper function to write JSON file
 const writeUsersFile = async (fileName, users) => {
-    try 
-    {
+    try {
         const filePath = path.join(__dirname, `../repositories/${fileName}`);
         await fs.writeFile(filePath, JSON.stringify(users, null, 2));
         const { code } = success;
         return { code };
-    } 
-    catch (err) 
-    {
-        console.error("Error writing file:", err.message);
+    } catch (err) {
+        console.error('Error writing file:', err.message);
         return { code: 500, message: `Failed to write to ${fileName}: ${err.message}` };
     }
 };
 
-
-// Main function to add or update user.
 const writeUserJson = async (fileName, newUser) => {
     const users = await readUsersFile(fileName);
+    const isPermissionsFile = fileName.includes('permissions');
 
-    // Check if user exists
-    const data = newUser._id ? newUser._id : newUser
-    const existingUserIndex = users.findIndex(user => user._id == data);
+    const validation = isPermissionsFile
+        ? validatePermissionsJsonRecord(newUser)
+        : validateUsersJsonRecord(newUser);
 
-    if (existingUserIndex !== -1) 
-    {
-        const { code } = success
-        users.splice(existingUserIndex, 1, newUser);
-        await writeUsersFile(fileName, users);
-        return { code, data: users } 
-    } 
-    else 
-    {
-        users.push(newUser);
+    if (!validation.valid) {
+        return { code: Responses.badRequest.code, message: validation.message };
     }
 
-    await writeUsersFile(fileName, users);
+    const record = validation.record;
+    const existingUserIndex = users.findIndex((user) => String(user._id) === String(record._id));
+
+    if (existingUserIndex !== -1) {
+        users.splice(existingUserIndex, 1, record);
+    } else {
+        users.push(record);
+    }
+
+    const writeResult = await writeUsersFile(fileName, users);
+    if (writeResult.code !== 200) {
+        return writeResult;
+    }
+
     const { code } = success;
-    return { code, data: users }
-}
+    return { code, data: users };
+};
 
-
-// Main function to delete user or permissions.
 const deleteUserJson = async (fileName, _id) => {
-    try 
-    {
+    try {
+        const normalizedId = normalizeId(_id);
+        if (!normalizedId) {
+            return { code: Responses.badRequest.code, message: 'Cannot delete JSON record without _id.' };
+        }
+
         const getUsers = await readUsersFile(fileName);
-        const updatedUsers = getUsers.filter(user => user._id.toString() !== _id);
-        
+        const updatedUsers = getUsers.filter((user) => String(user._id) !== normalizedId);
+
         await writeUsersFile(fileName, updatedUsers);
 
         const { code } = success;
         return { code, data: updatedUsers || [] };
-    } 
-    catch(err) 
-    {
-        console.error("Error in deleteUserJson:", err.message);
+    } catch (err) {
+        console.error('Error in deleteUserJson:', err.message);
         throw new Error(`Failed to write to ${fileName}: ${err.message}`);
     }
 };
-
 
 module.exports = {
     readUsersFile,
     writeUsersFile,
     writeUserJson,
-    deleteUserJson
+    deleteUserJson,
+    normalizeId,
+    validateUsersJsonRecord,
+    validatePermissionsJsonRecord,
 };

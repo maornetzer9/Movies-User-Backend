@@ -1,16 +1,18 @@
 const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
-const encryptionPassword = 
+const encryptionPassword =
 {
-    hashPassword: function(myPlaintextPassword) 
+    // Must remain synchronous — used as a Mongoose schema `set` transformer,
+    // which does not support async functions.
+    hashPassword: function(myPlaintextPassword)
     {
         const salt = bcrypt.genSaltSync(saltRounds);
         const hash = bcrypt.hashSync(myPlaintextPassword, salt);
         return hash;
     },
 
-    compareHash: (myPlaintextPassword, hash) => bcrypt.compareSync(myPlaintextPassword, hash),
+    compareHash: (myPlaintextPassword, hash) => bcrypt.compare(myPlaintextPassword, hash),
 };
 
 

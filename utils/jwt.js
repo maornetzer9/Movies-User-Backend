@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const secretKey = process.env.SECRET_KEY;
 const jwtUtils = {
     
-    generateToken: function(payload, expiresIn = '24hr')
+    generateToken: function(payload, expiresIn = '24h')
     {
         const options = { expiresIn };
         return jwt.sign(payload, secretKey, options);
@@ -14,7 +14,7 @@ const jwtUtils = {
     {
         try
         {
-            if(!token) return { code: 401, message: 'Token not found' };
+            if(!token) return null;
             return jwt.verify(token, secretKey);
         }
         catch(err)

@@ -10,7 +10,11 @@ const usersSchema = new mongoose.Schema({
     password: { 
         type: String, 
         set: hashPassword 
-    }
+    },
+    mustChangePassword: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const User = mongoose.model('users', usersSchema);
